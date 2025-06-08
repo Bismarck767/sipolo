@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - VeterinaryProject</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+</head>
+<body class="login-body">
+    <div class="login-wrapper">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="logo-large">
+                        <span class="logo-icon">🏥</span>
+                        <h1>VeterinaryProject</h1>
+                        <p class="logo-subtitle">Sistema de Gestión de Inventario</p>
+                    </div>
+                </div>
+
+                <div class="login-form-container">
+                    <h2>Iniciar Sesión</h2>
+                    <p class="login-description">Ingresa tus credenciales para acceder al sistema</p>
+
+                    <form id="loginForm" class="login-form">
+                        <div class="form-group">
+                            <label for="username">
+                                <span class="form-icon">👤</span>
+                                Usuario
+                            </label>
+                            <input type="text" 
+                                   id="username" 
+                                   name="username" 
+                                   placeholder="Ingresa tu usuario"
+                                   required 
+                                   autocomplete="username">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">
+                                <span class="form-icon">🔒</span>
+                                Contraseña
+                            </label>
+                            <input type="password" 
+                                   id="password" 
+                                   name="password" 
+                                   placeholder="Ingresa tu contraseña"
+                                   required 
+                                   autocomplete="current-password">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="role">
+                                <span class="form-icon">🎯</span>
+                                Rol
+                            </label>
+                            <select id="role" name="role" required>
+                                <option value="">Seleccionar rol</option>
+                                <option value="admin">👑 Administrador</option>
+                                <option value="employee">👤 Empleado</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-large">
+                            <span class="btn-icon">🚀</span>
+                            Ingresar al Sistema
+                        </button>
+                    </form>
+
+                    <div id="loginMessage" class="message"></div>
+
+                    <div class="login-help">
+                        <h3>Credenciales de Prueba:</h3>
+                        <div class="credentials-demo">
+                            <div class="credential-item">
+                                <strong>👑 Administrador</strong>
+                                <span>Usuario: <code>admin</code> | Contraseña: <code>admin123</code></span>
+                            </div>
+                            <div class="credential-item">
+                                <strong>👤 Empleado</strong>
+                                <span>Usuario: <code>empleado</code> | Contraseña: <code>emp123</code></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="login-footer">
+                    <p>&copy; 2025 VeterinaryProject. Sistema de gestión veterinaria.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-background">
+            <div class="bg-pattern"></div>
+            <div class="floating-elements">
+                <div class="floating-icon">💊</div>
+                <div class="floating-icon">🩺</div>
+                <div class="floating-icon">🐕</div>
+                <div class="floating-icon">🐱</div>
+                <div class="floating-icon">📋</div>
+                <div class="floating-icon">⚕️</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../utils/helpers.js"></script>
+    <script src="../utils/validators.js"></script>
+    <script src="../assets/js/storage.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../components/modal.js"></script>
+
+    <script>
+        // Lógica específica para la página de login
+        class LoginPage {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.checkExistingSession();
+            }
+
+            setupEventListeners() {
+                const loginForm = document.getElementById('loginForm');
+                if (loginForm) {
+                    loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+                }
+
+                // Auto-fill con credenciales demo
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('.credential-item')) {
+                        this.fillDemoCredentials(e.target.closest('.credential-item'));
+                    }
+                });
+            }
+
+            checkExistingSession() {
+                const savedUser = StorageManager.getUser();
+                if (savedUser && this.isSessionValid(savedUser)) {
+                    // Redirigir al dashboard
+                    window.location.href = 'dashboard.html';
+                }
+            }
+
+            isSessionValid(user) {
+                if (!user.loginTime) return false;
+                const loginTime = new Date(user.loginTime);
+                const now = new Date();
+                const timeDiff = now - loginTime;
+                return timeDiff < (8 * 60 * 60 * 1000); // 8 horas
+            }
+
+            async handleLogin(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const loginData = {
+                    username: formData.get('username'),
+                    password: formData.get('password'),
+                    role: formData.get('role')
+                };
+
+                // Validar formulario
+                const validation = Validators.validateLogin(loginData);
+                if (!validation.isValid) {
+                    this.showMessage(Object.values(validation.errors).join(', '), 'error');
+                    return;
+                }
+
+                // Mostrar loading
+                this.showLoading(true);
+
+                try {
+                    // Simular delay de autenticación
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    // Autenticar
+                    const authSystem = new AuthSystem();
+                    const result = await authSystem.login(loginData.username, loginData.password, loginData.role);
+
+                    if (result.success) {
+                        this.showMessage('✅ Inicio de sesión exitoso. Redirigiendo...', 'success');
+                        
+                        // Redirigir después de un momento
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1500);
+                    } else {
+                        this.showMessage('❌ ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error en login:', error);
+                    this.showMessage('❌ Error interno del sistema', 'error');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            fillDemoCredentials(credentialElement) {
+                const isAdmin = credentialElement.textContent.includes('Administrador');
+                
+                document.getElementById('username').value = isAdmin ? 'admin' : 'empleado';
+                document.getElementById('password').value = isAdmin ? 'admin123' : 'emp123';
+                document.getElementById('role').value = isAdmin ? 'admin' : 'employee';
+
+                // Efecto visual
+                credentialElement.style.background = 'var(--primary-color)';
+                credentialElement.style.color = 'white';
+                setTimeout(() => {
+                    credentialElement.style.background = '';
+                    credentialElement.style.color = '';
+                }, 300);
+            }
+
+            showMessage(message, type) {
+                const messageEl = document.getElementById('loginMessage');
+                if (messageEl) {
+                    messageEl.textContent = message;
+                    messageEl.className = `message ${type}`;
+                    messageEl.style.display = 'block';
+                }
+            }
+
+            showLoading(show) {
+                const submitBtn = document.querySelector('.btn-primary');
+                if (show) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner"></span> Iniciando sesión...';
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span class="btn-icon">🚀</span> Ingresar al Sistema';
+                }
+            }
+        }
+
+        // Inicializar página de login
+        document.addEventListener('DOMContentLoaded', () => {
+            new LoginPage();
+        });
+    </script>
+
+    <style>
+        /* Estilos específicos para la página de login */
+        .login-body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: var(--font-family);
+            overflow: hidden;
+        }
+
+        .login-wrapper {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .logo-large .logo-icon {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-large h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .logo-subtitle {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 0.875rem;
+        }
+
+        .login-form-container {
+            padding: 2rem;
+        }
+
+        .login-form-container h2 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            text-align: center;
+        }
+
+        .login-description {
+            text-align: center;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .login-form label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .form-icon {
+            font-size: 1rem;
+        }
+
+        .login-form input,
+        .login-form select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .login-form input:focus,
+        .login-form select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-large {
+            width: 100%;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .login-help {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--light-color);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .login-help h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+
+        .credentials-demo {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .credential-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .credential-item:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .credential-item strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            color: var(--dark-color);
+        }
+
+        .credential-item code {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .login-footer {
+            padding: 1.5rem 2rem;
+            background: var(--light-color);
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.75rem;
+        }
+
+        .login-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+        }
+
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+        }
+
+        .floating-icon {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.1;
+            animation: floatIcon 15s linear infinite;
+        }
+
+        .floating-icon:nth-child(1) { left: 10%; animation-delay: -2s; }
+        .floating-icon:nth-child(2) { left: 20%; animation-delay: -4s; }
+        .floating-icon:nth-child(3) { left: 30%; animation-delay: -6s; }
+        .floating-icon:nth-child(4) { left: 40%; animation-delay: -8s; }
+        .floating-icon:nth-child(5) { left: 60%; animation-delay: -10s; }
+        .floating-icon:nth-child(6) { left: 80%; animation-delay: -12s; }
+
+        @keyframes floatIcon {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .login-wrapper {
+                padding: 1rem;
+            }
+            
+            .login-card {
+                border-radius: 16px;
+            }
+            
+            .login-header {
+                padding: 1.5rem;
+            }
+            
+            .login-form-container {
+                padding: 1.5rem;
+            }
+            
+            .logo-large .logo-icon {
+                font-size: 2.5rem;
+            }
+            
+            .logo-large h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>

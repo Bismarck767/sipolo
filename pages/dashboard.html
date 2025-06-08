@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - VeterinaryProject</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>🏥 VeterinaryProject</h1>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="dashboard.html" class="nav-link active">Dashboard</a></li>
+                    <li><a href="inventory.html" class="nav-link">Inventario</a></li>
+                    <li><a href="alerts.html" class="nav-link">Alertas</a></li>
+                    <li><a href="reports.html" class="nav-link">Reportes</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <span id="userName">Usuario</span>
+                <button id="logoutBtn" class="btn btn-secondary">Cerrar Sesión</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Welcome Section -->
+            <section class="welcome-section">
+                <div class="welcome-content">
+                    <h1 class="welcome-title">
+                        <span class="welcome-icon">👋</span>
+                        Bienvenido al Dashboard
+                    </h1>
+                    <p class="welcome-subtitle" id="welcomeMessage">
+                        Panel de control del sistema de inventario veterinario
+                    </p>
+                    <div class="welcome-stats">
+                        <div class="quick-stat">
+                            <span class="stat-icon">📅</span>
+                            <span id="currentDate"></span>
+                        </div>
+                        <div class="quick-stat">
+                            <span class="stat-icon">⏰</span>
+                            <span id="currentTime"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Statistics Cards -->
+            <section class="dashboard-overview">
+                <h2 class="section-title">Resumen General</h2>
+                <div class="dashboard-cards">
+                    <div class="card card-primary">
+                        <div class="card-icon">💊</div>
+                        <div class="card-content">
+                            <h3>Total Medicamentos</h3>
+                            <p class="card-number" id="totalMeds">0</p>
+                            <small class="card-change positive" id="medsChange">+0 este mes</small>
+                        </div>
+                    </div>
+                    
+                    <div class="card card-warning">
+                        <div class="card-icon">⚠️</div>
+                        <div class="card-content">
+                            <h3>Próximos a Vencer</h3>
+                            <p class="card-number" id="expiringSoon">0</p>
+                            <small class="card-change" id="expiringChange">en 30 días</small>
+                        </div>
+                    </div>
+                    
+                    <div class="card card-danger">
+                        <div class="card-icon">📦</div>
+                        <div class="card-content">
+                            <h3>Stock Bajo</h3>
+                            <p class="card-number" id="lowStock">0</p>
+                            <small class="card-change negative" id="stockChange">requieren atención</small>
+                        </div>
+                    </div>
+                    
+                    <div class="card card-success">
+                        <div class="card-icon">💰</div>
+                        <div class="card-content">
+                            <h3>Valor Total</h3>
+                            <p class="card-number" id="totalValue">$0</p>
+                            <small class="card-change" id="valueChange">inventario actual</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions-section">
+                <h2 class="section-title">Acciones Rápidas</h2>
+                <div class="quick-actions-grid">
+                    <button class="quick-action-card" onclick="navigateTo('inventory.html')">
+                        <div class="action-icon">➕</div>
+                        <div class="action-content">
+                            <h3>Agregar Medicamento</h3>
+                            <p>Registrar nuevo producto en el inventario</p>
+                        </div>
+                    </button>
+                    
+                    <button class="quick-action-card" onclick="navigateTo('inventory.html')">
+                        <div class="action-icon">🔍</div>
+                        <div class="action-content">
+                            <h3>Buscar Medicamento</h3>
+                            <p>Encontrar productos en el inventario</p>
+                        </div>
+                    </button>
+                    
+                    <button class="quick-action-card" onclick="navigateTo('reports.html')">
+                        <div class="action-icon">📊</div>
+                        <div class="action-content">
+                            <h3>Generar Reporte</h3>
+                            <p>Crear reportes de inventario y consumo</p>
+                        </div>
+                    </button>
+                    
+                    <button class="quick-action-card" onclick="navigateTo('alerts.html')">
+                        <div class="action-icon">🚨</div>
+                        <div class="action-content">
+                            <h3>Ver Alertas</h3>
+                            <p>Revisar alertas de vencimiento y stock</p>
+                        </div>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Recent Activity & Alerts -->
+            <div class="dashboard-grid">
+                <section class="recent-activity">
+                    <h2 class="section-title">Actividad Reciente</h2>
+                    <div class="activity-container">
+                        <div id="recentActivity" class="activity-list">
+                            <!-- La actividad se carga dinámicamente -->
+                        </div>
+                        <div class="activity-footer">
+                            <a href="inventory.html" class="view-all-link">Ver todo el inventario →</a>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="critical-alerts">
+                    <h2 class="section-title">Alertas Críticas</h2>
+                    <div class="alerts-container">
+                        <div id="criticalAlerts" class="alerts-list">
+                            <!-- Las alertas se cargan dinámicamente -->
+                        </div>
+                        <div class="alerts-footer">
+                            <a href="alerts.html" class="view-all-link">Ver todas las alertas →</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Inventory Summary - SECCIÓN ARREGLADA -->
+            <section class="inventory-summary">
+                <div id="animalSummaryContainer">
+                    <!-- Aquí se genera dinámicamente el resumen de todos los animales -->
+                    <h2 class="section-title">Resumen del Inventario</h2>
+                    <p>Cargando datos...</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../utils/helpers.js"></script>
+    <script src="../utils/validators.js"></script>
+    <script src="../assets/js/storage.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/alerts.js"></script>
+    <script src="../components/modal.js"></script>
+
+    <script>
+        // Lógica específica para el dashboard
+        class DashboardPage {
+            constructor() {
+                this.currentUser = null;
+                this.medicines = [];
+                this.alerts = [];
+                this.init();
+            }
+
+            init() {
+                this.checkAuthentication();
+                this.loadData();
+                this.setupEventListeners();
+                this.updateTime();
+                this.startTimeUpdater();
+            }
+
+            checkAuthentication() {
+                const savedUser = StorageManager.getUser();
+                if (!savedUser || !this.isSessionValid(savedUser)) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                this.currentUser = savedUser;
+                this.updateUserInfo();
+            }
+
+            isSessionValid(user) {
+                if (!user.loginTime) return false;
+                const loginTime = new Date(user.loginTime);
+                const now = new Date();
+                const timeDiff = now - loginTime;
+                return timeDiff < (8 * 60 * 60 * 1000); // 8 horas
+            }
+
+            updateUserInfo() {
+                const userName = document.getElementById('userName');
+                if (userName && this.currentUser) {
+                    const roleText = this.currentUser.role === 'admin' ? 'Administrador' : 'Empleado';
+                    userName.textContent = `${this.currentUser.username} (${roleText})`;
+                }
+
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                if (welcomeMessage && this.currentUser) {
+                    const greeting = this.getTimeGreeting();
+                    welcomeMessage.textContent = `${greeting}, ${this.currentUser.username}. Aquí tienes el resumen de tu inventario.`;
+                }
+            }
+
+            getTimeGreeting() {
+                const hour = new Date().getHours();
+                if (hour < 12) return 'Buenos días';
+                if (hour < 18) return 'Buenas tardes';
+                return 'Buenas noches';
+            }
+
+            loadData() {
+                this.medicines = StorageManager.getMedicines();
+                this.updateDashboardStats();
+                this.loadRecentActivity();
+                this.loadCriticalAlerts();
+                this.logout
+                this.updateInventorySummary();
+            }
+
+            setupEventListeners() {
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', () => this.logout());
+                }
+            }
+
+            // Función showToast AGREGADA
+            showToast(message, type = 'info', duration = 3000) {
+                // Crear elemento toast si no existe
+                let toastContainer = document.getElementById('toastContainer');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toastContainer';
+                    toastContainer.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        z-index: 10000;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                    `;
+                    document.body.appendChild(toastContainer);
+                }
+
+                // Crear toast
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    padding: 12px 16px;
+                    border-radius: 6px;
+                    color: white;
+                    font-weight: 500;
+                    min-width: 250px;
+                    opacity: 0;
+                    transform: translateX(100%);
+                    transition: all 0.3s ease;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                `;
+
+                // Colores según tipo
+                const colors = {
+                    'success': '#10b981',
+                    'error': '#ef4444', 
+                    'warning': '#f59e0b',
+                    'info': '#3b82f6'
+                };
+                toast.style.backgroundColor = colors[type] || colors['info'];
+                toast.textContent = message;
+
+                toastContainer.appendChild(toast);
+
+                // Mostrar
+                setTimeout(() => {
+                    toast.style.opacity = '1';
+                    toast.style.transform = 'translateX(0)';
+                }, 100);
+
+                // Ocultar
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            toast.parentNode.removeChild(toast);
+                        }
+                    }, 300);
+                }, duration);
+            }
+
+            logout() {
+                try {
+                    // Confirmar logout
+                    if (!confirm('¿Estás seguro que quieres cerrar sesión?')) {
+                        return;
+                    }
+
+                    // Limpiar datos
+                    StorageManager.clearUser();
+                    localStorage.removeItem('veterinary_user');
+                    
+                    // Mostrar mensaje
+                    this.showToast('Cerrando sesión...', 'info');
+                    
+                    // Redirigir después de un momento
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('Error en logout:', error);
+                    // Forzar limpieza en caso de error
+                    localStorage.clear();
+                    window.location.href = 'login.html';
+                }
+            }
+
+            updateTime() {
+                const currentDate = document.getElementById('currentDate');
+                const currentTime = document.getElementById('currentTime');
+                
+                const now = new Date();
+                
+                if (currentDate) {
+                    currentDate.textContent = now.toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
+                
+                if (currentTime) {
+                    currentTime.textContent = now.toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                }
+            }
+
+            startTimeUpdater() {
+                setInterval(() => this.updateTime(), 1000);
+            }
+
+            updateDashboardStats() {
+                const totalMeds = this.medicines.length;
+                const now = new Date();
+                const thirtyDaysFromNow = new Date();
+                thirtyDaysFromNow.setDate(now.getDate() + 30);
+
+                // Medicamentos próximos a vencer
+                const expiring = this.medicines.filter(med => {
+                    const expiryDate = new Date(med.expiryDate);
+                    return expiryDate <= thirtyDaysFromNow && expiryDate >= now;
+                });
+
+                // Stock bajo
+                const lowStockMeds = this.medicines.filter(med => med.quantity <= med.minStock);
+
+                // Valor total
+                const totalValue = this.medicines.reduce((sum, med) => sum + (med.quantity * 10), 0);
+
+                // Actualizar elementos
+                this.updateElement('totalMeds', totalMeds);
+                this.updateElement('expiringSoon', expiring.length);
+                this.updateElement('lowStock', lowStockMeds.length);
+                this.updateElement('totalValue', this.formatCurrency(totalValue));
+
+                // Actualizar cambios
+                this.updateElement('medsChange', `+${Math.floor(Math.random() * 5)} este mes`);
+                this.updateElement('expiringChange', 'en 30 días');
+                this.updateElement('stockChange', lowStockMeds.length > 0 ? 'requieren atención' : 'todo normal');
+                this.updateElement('valueChange', 'inventario actual');
+            }
+
+            updateElement(id, value) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                }
+            }
+
+            formatCurrency(amount) {
+                return new Intl.NumberFormat('es-CR', {
+                    style: 'currency',
+                    currency: 'CRC',
+                    minimumFractionDigits: 0
+                }).format(amount);
+            }
+
+            loadRecentActivity() {
+                const recentActivity = document.getElementById('recentActivity');
+                if (!recentActivity) return;
+
+                // Simular actividad reciente
+                const activities = [
+                    { action: 'Medicamento agregado', item: 'Amoxicilina Canina', time: '2 horas', icon: '➕', type: 'success' },
+                    { action: 'Stock actualizado', item: 'Antihistamínico Felino', time: '4 horas', icon: '📦', type: 'info' },
+                    { action: 'Alerta generada', item: 'Vitaminas Multi - Stock bajo', time: '6 horas', icon: '⚠️', type: 'warning' },
+                    { action: 'Reporte generado', item: 'Inventario mensual', time: '1 día', icon: '📊', type: 'info' },
+                    { action: 'Usuario conectado', item: this.currentUser.username, time: 'Ahora', icon: '👤', type: 'success' }
+                ];
+
+                recentActivity.innerHTML = activities.map(activity => `
+                    <div class="activity-item ${activity.type}">
+                        <div class="activity-icon">${activity.icon}</div>
+                        <div class="activity-content">
+                            <div class="activity-action">${activity.action}</div>
+                            <div class="activity-item-name">${activity.item}</div>
+                        </div>
+                        <div class="activity-time">${activity.time}</div>
+                    </div>
+                `).join('');
+            }
+
+            loadCriticalAlerts() {
+                const criticalAlerts = document.getElementById('criticalAlerts');
+                if (!criticalAlerts) return;
+
+                // Simular alertas críticas
+                const alerts = [];
+                
+                this.medicines.forEach(med => {
+                    // Medicamentos vencidos
+                    if (new Date(med.expiryDate) < new Date()) {
+                        alerts.push({
+                            type: 'expired',
+                            icon: '❌',
+                            title: 'Medicamento Vencido',
+                            message: `${med.name} venció el ${this.formatDate(med.expiryDate)}`,
+                            priority: 'high'
+                        });
+                    }
+                    
+                    // Stock crítico
+                    if (med.quantity === 0) {
+                        alerts.push({
+                            type: 'outofstock',
+                            icon: '🚫',
+                            title: 'Sin Stock',
+                            message: `${med.name} no tiene stock disponible`,
+                            priority: 'high'
+                        });
+                    }
+                });
+
+                if (alerts.length === 0) {
+                    criticalAlerts.innerHTML = `
+                        <div class="no-alerts">
+                            <div class="no-alerts-icon">✅</div>
+                            <p>No hay alertas críticas</p>
+                        </div>
+                    `;
+                } else {
+                    criticalAlerts.innerHTML = alerts.slice(0, 3).map(alert => `
+                        <div class="alert-item ${alert.type}">
+                            <div class="alert-icon">${alert.icon}</div>
+                            <div class="alert-content">
+                                <div class="alert-title">${alert.title}</div>
+                                <div class="alert-message">${alert.message}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            // ===== FUNCIONES DINÁMICAS DE ANIMALES - ARREGLADAS =====
+
+            updateInventorySummary() {
+                // Obtener todos los tipos de animales que realmente existen en el inventario
+                const allAnimalTypes = [...new Set(this.medicines.map(med => med.animalType))];
+                
+                if (allAnimalTypes.length === 0) {
+                    // Si no hay medicamentos, mostrar mensaje
+                    const container = document.getElementById('animalSummaryContainer');
+                    if (container) {
+                        container.innerHTML = '<h2 class="section-title">Resumen del Inventario</h2><p>No hay medicamentos en el inventario</p>';
+                    }
+                    return;
+                }
+
+                // Contar medicamentos por tipo
+                const animalCounts = {};
+                allAnimalTypes.forEach(type => {
+                    animalCounts[type] = this.medicines.filter(med => med.animalType === type).length;
+                });
+
+                // Ordenar por cantidad (mayor a menor)
+                const sortedAnimals = Object.entries(animalCounts)
+                    .sort(([,a], [,b]) => b - a);
+
+                // Crear el HTML dinámico para TODOS los tipos
+                this.createAllAnimalsDisplay(sortedAnimals);
+            }
+
+            createAllAnimalsDisplay(sortedAnimals) {
+                const container = document.getElementById('animalSummaryContainer');
+                if (!container) return;
+
+                // Crear HTML con TODOS los tipos de animales
+                container.innerHTML = `
+                    <h2 class="section-title">📊 Medicamentos por Tipo de Animal</h2>
+                    <div class="animals-grid">
+                        ${sortedAnimals.map(([type, count]) => `
+                            <div class="animal-card">
+                                <div class="animal-icon">${this.getAnimalIcon(type)}</div>
+                                <div class="animal-info">
+                                    <span class="animal-name">${this.formatAnimalName(type)}</span>
+                                    <span class="animal-count">${count} medicamento${count !== 1 ? 's' : ''}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <strong>Total tipos:</strong> ${sortedAnimals.length}
+                        </div>
+                        <div class="stat-item">
+                            <strong>Total medicamentos:</strong> ${sortedAnimals.reduce((sum, [, count]) => sum + count, 0)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Obtener icono según tipo de animal
+            getAnimalIcon(type) {
+                const icons = {
+                    'perros': '🐕', 'gatos': '🐱', 'general': '🏥', 'conejos': '🐰', 'hamsters': '🐹',
+                    'cobayas': '🐹', 'chinchillas': '🐭', 'hurones': '🦫', 'aves-domesticas': '🐦', 
+                    'canarios': '🐤', 'loros': '🦜', 'periquitos': '🦜', 'peces-ornamentales': '🐠',
+                    'tortugas': '🐢', 'iguanas': '🦎', 'serpientes': '🐍', 'erizos': '🦔', 'vacas': '🐄',
+                    'cerdos': '🐷', 'cabras': '🐐', 'ovejas': '🐑', 'pollos': '🐓', 'gallinas': '🐔',
+                    'patos': '🦆', 'gansos': '🦢', 'pavos': '🦃', 'caballos': '🐴', 'burros': '🫏',
+                    'mulas': '🐴', 'llamas': '🦙', 'alpacas': '🦙', 'primates': '🐵', 'felinos-grandes': '🦁',
+                    'osos': '🐻', 'lobos': '🐺', 'zorros': '🦊', 'mapaches': '🦝', 'nutrias': '🦦',
+                    'focas': '🦭', 'delfines': '🐬', 'ballenas': '🐋', 'tiburones': '🦈', 'rayas': '🐟',
+                    'cocodrilos': '🐊', 'lagartos': '🦎', 'salamandras': '🦎', 'ranas': '🐸', 'sapos': '🐸',
+                    'arañas': '🕷️', 'escorpiones': '🦂', 'insectos': '🐛', 'aguila': '🦅', 'halcon': '🦅',
+                    'buho': '🦉', 'flamingo': '🦩', 'pinguino': '🐧', 'avestruz': '🦓', 'emu': '🦓',
+                    'casuario': '🦓', 'tucanes': '🦜', 'guacamayos': '🦜', 'cacatuas': '🦜', 'cisnes': '🦢',
+                    'pelicanos': '🦢', 'peces-marinos': '🐟', 'peces-agua-dulce': '🐟', 'medusas': '🪼',
+                    'pulpos': '🐙', 'calamares': '🦑', 'cangrejos': '🦀', 'langostas': '🦞', 'camarones': '🦐',
+                    'estrellas-mar': '⭐', 'erizos-mar': '🦔', 'corales': '🪸','Tigre': '🐅'
+                };
+                return icons[type] || '🐾';
+            }
+
+            // Formatear nombre del animal
+            formatAnimalName(type) {
+                return type.split('-')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+            }
+
+            formatDate(dateString) {
+                return new Date(dateString).toLocaleDateString('es-ES');
+            }
+        }
+
+        // Función para navegación
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        // Inicializar dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            new DashboardPage();
+        });
+    </script>
+
+    <style>
+        .animals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .animal-card {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+
+        .animal-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .animal-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+
+        .animal-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .animal-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .animal-count {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .summary-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-item {
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .animals-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-stats {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Estilos específicos del dashboard */
+        .main-content {
+            padding: 2rem;
+            background: var(--light-color);
+            min-height: calc(100vh - 64px);
+        }
+
+        .welcome-section {
+            background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .welcome-icon {
+            font-size: 2.5rem;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0 0 1.5rem 0;
+        }
+
+        .welcome-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .quick-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-overview {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin: 0 0 1.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+
+        .card-content h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.875rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .card-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin: 0;
+        }
+
+        .card-change {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .card-change.positive { color: var(--success-color); }
+        .card-change.negative { color: var(--danger-color); }
+
+        .quick-actions-section {
+            margin-bottom: 3rem;
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .quick-action-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .quick-action-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-icon {
+            font-size: 2rem;
+            background: var(--light-color);
+            padding: 1rem;
+            border-radius: 50%;
+            min-width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-content h3 {
+            margin: 0 0 0.25rem 0;
+            color: var(--dark-color);
+            font-size: 1rem;
+        }
+
+        .action-content p {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .recent-activity,
+        .critical-alerts {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .activity-container,
+        .alerts-container {
+            padding: 1.5rem;
+        }
+
+        .activity-list,
+        .alerts-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--light-color);
+        }
+
+        .activity-item.success .activity-icon {
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .activity-item.warning .activity-icon {
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .activity-item.info .activity-icon {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-action {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-item-name {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .alert-item.expired {
+            background: rgba(239, 68, 68, 0.05);
+            border-left-color: var(--danger-color);
+        }
+
+        .alert-item.outofstock {
+            background: rgba(239, 68, 68, 0.05);
+            border-left-color: var(--danger-color);
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-message {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        .no-alerts {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+        }
+
+        .no-alerts-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .activity-footer,
+        .alerts-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            background: var(--light-color);
+        }
+
+        .view-all-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .view-all-link:hover {
+            text-decoration: underline;
+        }
+
+        .inventory-summary {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .summary-card {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 8px;
+            background: var(--light-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-card h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            color: var(--dark-color);
+        }
+
+        .summary-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .summary-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+            
+            .welcome-stats {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

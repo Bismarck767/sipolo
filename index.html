@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeterinaryProject - Sistema de Inventario</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <style>
+        /* Estilos específicos para el index */
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #fff;
+            color: #667eea;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .features-section {
+            padding: 4rem 0;
+            background: #f8f9fa;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .quick-access {
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .access-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .access-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .access-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 3rem;
+        }
+
+        /* Header para index */
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+        }
+
+        .logo h1 {
+            margin: 0;
+            color: #667eea;
+            font-size: 1.5rem;
+        }
+
+        body {
+            padding-top: 80px;
+        }
+
+        .info-section {
+            padding: 4rem 0;
+            background: white;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .info-card {
+            padding: 1.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            transition: border-color 0.3s ease;
+        }
+
+        .info-card:hover {
+            border-color: #667eea;
+        }
+
+        .info-card h4 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+            
+            .access-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .access-btn {
+                width: 250px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>🏥 VeterinaryProject</h1>
+            </div>
+            <div class="header-actions">
+                <a href="pages/login.html" class="btn btn-primary">Iniciar Sesión</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1>🏥 Sistema de Inventario Veterinario</h1>
+            <p>Gestiona eficientemente el inventario de medicamentos y suministros de tu clínica veterinaria</p>
+            <a href="pages/login.html" class="cta-button">Comenzar Ahora</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <h2 class="section-title">Características Principales</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Dashboard Intuitivo</h3>
+                    <p>Visualiza el estado completo de tu inventario de forma clara y organizada con métricas en tiempo real.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💊</div>
+                    <h3>Gestión de Medicamentos</h3>
+                    <p>Administra medicamentos para diferentes tipos de animales con control completo de stock y fechas.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚨</div>
+                    <h3>Sistema de Alertas</h3>
+                    <p>Recibe notificaciones automáticas sobre vencimientos próximos y niveles bajos de stock.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Reportes Detallados</h3>
+                    <p>Genera reportes completos de consumo, inventario y análisis para tomar mejores decisiones.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Access Section -->
+    <section class="quick-access">
+        <div class="container">
+            <h2 class="section-title">Acceso Rápido</h2>
+            <p>Inicia sesión para acceder a todas las funcionalidades del sistema</p>
+            <div class="access-buttons">
+                <a href="pages/login.html" class="access-btn">
+                    🔐 Iniciar Sesión
+                </a>
+                <a href="pages/dashboard.html" class="access-btn">
+                    📊 Dashboard
+                </a>
+                <a href="pages/inventory.html" class="access-btn">
+                    💊 Inventario
+                </a>
+                <a href="pages/alerts.html" class="access-btn">
+                    🚨 Alertas
+                </a>
+                <a href="pages/reports.html" class="access-btn">
+                    📈 Reportes
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Info Section -->
+    <section class="info-section">
+        <div class="container">
+            <h2 class="section-title">¿Por qué elegir VeterinaryProject?</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>✅ Fácil de Usar</h4>
+                    <p>Interfaz intuitiva diseñada específicamente para clínicas veterinarias</p>
+                </div>
+                <div class="info-card">
+                    <h4>🔒 Seguro</h4>
+                    <p>Sistema de autenticación robusto con diferentes niveles de acceso</p>
+                </div>
+                <div class="info-card">
+                    <h4>📱 Responsivo</h4>
+                    <p>Funciona perfectamente en computadoras, tablets y dispositivos móviles</p>
+                </div>
+                <div class="info-card">
+                    <h4>⚡ Rápido</h4>
+                    <p>Rendimiento optimizado para operaciones rápidas y eficientes</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: #333; color: white; text-align: center; padding: 2rem 0;">
+        <div class="container">
+            <p>&copy; 2024 VeterinaryProject. Sistema de Inventario Veterinario.</p>
+            <p>Desarrollado para la gestión eficiente de clínicas veterinarias.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="utils/helpers.js"></script>
+    <script src="assets/js/storage.js"></script>
+    
+    <script>
+        // Funcionalidad específica del index
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar si el usuario ya está logueado
+            checkExistingSession();
+            
+            // Agregar efectos suaves a los botones
+            addButtonEffects();
+            
+            // Inicializar datos de demostración si no existen
+            initializeDemoData();
+        });
+
+        function checkExistingSession() {
+            // Si hay un usuario logueado, redirigir al dashboard
+            const savedUser = StorageManager?.getUser();
+            if (savedUser) {
+                // Verificar si la sesión sigue siendo válida
+                const loginTime = new Date(savedUser.loginTime);
+                const now = new Date();
+                const timeDiff = now - loginTime;
+                
+                // Si la sesión es válida (menos de 8 horas)
+                if (timeDiff < (8 * 60 * 60 * 1000)) {
+                    // Mostrar opción de ir al dashboard
+                    updateHeaderForLoggedUser(savedUser);
+                }
+            }
+        }
+
+        function updateHeaderForLoggedUser(user) {
+            const headerActions = document.querySelector('.header-actions');
+            if (headerActions) {
+                headerActions.innerHTML = `
+                    <span style="margin-right: 1rem; color: #667eea;">
+                        Bienvenido, ${user.username}
+                    </span>
+                    <a href="pages/dashboard.html" class="btn btn-primary">Ir al Dashboard</a>
+                `;
+            }
+        }
+
+        function addButtonEffects() {
+            // Agregar efectos hover a todos los botones de acceso
+            const accessButtons = document.querySelectorAll('.access-btn');
+            accessButtons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-3px) scale(1.02)';
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        }
+
+        function initializeDemoData() {
+            // Inicializar algunos datos de demostración si no existen
+            if (typeof StorageManager !== 'undefined') {
+                const existingMeds = StorageManager.getMedicines();
+                if (existingMeds.length === 0) {
+                    // Agregar algunos medicamentos de ejemplo
+                    const demoMedicines = [
+                        {
+                            id: 'demo1',
+                            code: 'AMX001',
+                            name: 'Amoxicilina Canina',
+                            quantity: 50,
+                            minStock: 10,
+                            dose: '250mg',
+                            animalType: 'perros',
+                            expiryDate: '2024-12-31',
+                            supplier: 'VetPharma',
+                            dateAdded: new Date().toISOString()
+                        },
+                        {
+                            id: 'demo2',
+                            code: 'VIT001',
+                            name: 'Vitaminas Felinas',
+                            quantity: 5,
+                            minStock: 15,
+                            dose: '1 comprimido',
+                            animalType: 'gatos',
+                            expiryDate: '2024-08-15',
+                            supplier: 'HealthyPets',
+                            dateAdded: new Date().toISOString()
+                        }
+                    ];
+                    
+                    demoMedicines.forEach(med => {
+                        StorageManager.saveMedicine(med);
+                    });
+                }
+            }
+        }
+
+        // Función para navegación suave
+        function navigateToPage(url) {
+            window.location.href = url;
+        }
+
+        // Detectar clics en los enlaces de acceso rápido
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('.access-btn');
+            if (target && target.href) {
+                // Agregar una pequeña animación antes de navegar
+                target.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    window.location.href = target.href;
+                }, 150);
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

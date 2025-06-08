@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - VeterinaryProject</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>🏥 VeterinaryProject</h1>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+                    <li><a href="inventory.html" class="nav-link active">Inventario</a></li>
+                    <li><a href="alerts.html" class="nav-link">Alertas</a></li>
+                    <li><a href="reports.html" class="nav-link">Reportes</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <span id="userName">Usuario</span>
+                <button id="logoutBtn" class="btn btn-secondary">Cerrar Sesión</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title-section">
+                    <h1 class="page-title">
+                        <span class="page-icon">💊</span>
+                        Gestión de Inventario
+                    </h1>
+                    <p class="page-subtitle">Administra los medicamentos y productos veterinarios</p>
+                </div>
+                <div class="page-actions">
+                    <button id="addMedBtn" class="btn btn-primary">
+                        <span class="btn-icon">➕</span>
+                        Agregar Medicamento
+                    </button>
+                    <button id="exportBtn" class="btn btn-secondary">
+                        <span class="btn-icon">📤</span>
+                        Exportar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Inventory Stats -->
+            <div class="inventory-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="totalMedicines">0</span>
+                        <span class="stat-label">Total Medicamentos</span>
+                    </div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="lowStockCount">0</span>
+                        <span class="stat-label">Stock Bajo</span>
+                    </div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-icon">⏰</div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="expiringCount">0</span>
+                        <span class="stat-label">Por Vencer</span>
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="totalValue">$0</span>
+                        <span class="stat-label">Valor Total</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="filters-card">
+                    <h3 class="filters-title">
+                        <span class="filters-icon">🔍</span>
+                        Filtros y Búsqueda
+                    </h3>
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label for="searchInput">Buscar:</label>
+                            <input type="text" 
+                                   id="searchInput" 
+                                   placeholder="Nombre o código del medicamento..."
+                                   class="filter-input">
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterType">Tipo de Animal:</label>
+                            <select id="filterType" class="filter-select">
+                                <option value="">Todos los tipos</option>
+                                <!-- Opciones se cargan dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterStatus">Estado:</label>
+                            <select id="filterStatus" class="filter-select">
+                                <option value="">Todos los estados</option>
+                                <option value="available">✅ Disponible</option>
+                                <option value="low">⚠️ Stock Bajo</option>
+                                <option value="expired">❌ Vencido</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <button id="clearFiltersBtn" class="btn btn-outline">
+                                <span class="btn-icon">🗑️</span>
+                                Limpiar Filtros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Table -->
+            <div class="inventory-table-section">
+                <div class="table-header">
+                    <h3 class="table-title">Lista de Medicamentos</h3>
+                    <div class="table-actions">
+                        <span class="results-count" id="resultsCount">0 medicamentos</span>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="medicineTable" class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="code">
+                                    <span class="th-content">Código</span>
+                                    <span class="sort-icon">↕️</span>
+                                </th>
+                                <th class="sortable" data-sort="name">
+                                    <span class="th-content">Medicamento</span>
+                                    <span class="sort-icon">↕️</span>
+                                </th>
+                                <th class="sortable" data-sort="quantity">
+                                    <span class="th-content">Stock</span>
+                                    <span class="sort-icon">↕️</span>
+                                </th>
+                                <th>Tipo</th>
+                                <th class="sortable" data-sort="expiryDate">
+                                    <span class="th-content">Vencimiento</span>
+                                    <span class="sort-icon">↕️</span>
+                                </th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="medicineTableBody">
+                            <!-- Las filas se cargan dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container" id="paginationContainer">
+                    <!-- La paginación se genera dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal para Agregar/Editar Medicamento -->
+    <div id="medicineModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Agregar Medicamento</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="medicineForm" class="modal-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="medCode">
+                            <span class="form-icon">🏷️</span>
+                            Código*
+                        </label>
+                        <input type="text" id="medCode" name="code" required 
+                               placeholder="Ej: DOG001, CAT002">
+                    </div>
+                    <div class="form-group">
+                        <label for="medName">
+                            <span class="form-icon">💊</span>
+                            Nombre*
+                        </label>
+                        <input type="text" id="medName" name="name" required 
+                               placeholder="Nombre del medicamento">
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="medQuantity">
+                            <span class="form-icon">📦</span>
+                            Cantidad*
+                        </label>
+                        <input type="number" id="medQuantity" name="quantity" min="0" required 
+                               placeholder="Cantidad en stock">
+                    </div>
+                    <div class="form-group">
+                        <label for="medMinStock">
+                            <span class="form-icon">⚠️</span>
+                            Stock Mínimo*
+                        </label>
+                        <input type="number" id="medMinStock" name="minStock" min="0" required 
+                               placeholder="Cantidad mínima">
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="medDose">
+                            <span class="form-icon">🥄</span>
+                            Dosis*
+                        </label>
+                        <input type="text" id="medDose" name="dose" required 
+                               placeholder="Ej: 250mg, 5ml">
+                    </div>
+                    <div class="form-group">
+                        <label for="medType">
+                            <span class="form-icon">🎯</span>
+                            Tipo de Animal*
+                        </label>
+                        <select id="medType" name="animalType" required>
+                            <option value="">Seleccionar tipo</option>
+                            <!-- Opciones se cargan dinámicamente -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="medExpiry">
+                            <span class="form-icon">📅</span>
+                            Fecha de Vencimiento*
+                        </label>
+                        <input type="date" id="medExpiry" name="expiryDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="medSupplier">
+                            <span class="form-icon">🏢</span>
+                            Proveedor*
+                        </label>
+                        <select id="medSupplier" name="supplier" required>
+                            <option value="">Seleccionar proveedor</option>
+                            <!-- Opciones se cargan dinámicamente -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-icon">💾</span>
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../utils/helpers.js"></script>
+    <script src="../utils/validators.js"></script>
+    <script src="../assets/js/storage.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../components/modal.js"></script>
+
+    <script>
+        // TIPOS DE ANIMALES Y PROVEEDORES COMPLETOS
+        const ANIMAL_TYPES = [
+            'perros', 'gatos', 'general', 'conejos', 'hamsters', 'cobayas', 'chinchillas', 'hurones',
+            'aves-domesticas', 'canarios', 'loros', 'periquitos', 'peces-ornamentales', 'tortugas',
+            'iguanas', 'serpientes', 'erizos', 'vacas', 'cerdos', 'cabras', 'ovejas', 'pollos',
+            'gallinas', 'patos', 'gansos', 'pavos', 'caballos', 'burros', 'mulas', 'llamas',
+            'alpacas', 'primates', 'felinos-grandes', 'osos', 'lobos', 'zorros', 'mapaches',
+            'nutrias', 'focas', 'delfines', 'ballenas', 'tiburones', 'rayas', 'cocodrilos',
+            'lagartos', 'salamandras', 'ranas', 'sapos', 'arañas', 'escorpiones', 'insectos',
+            'aguila', 'halcon', 'buho', 'flamingo', 'pinguino', 'avestruz', 'emu', 'casuario',
+            'tucanes', 'guacamayos', 'cacatuas', 'cisnes', 'pelicanos', 'peces-marinos',
+            'peces-agua-dulce', 'medusas', 'pulpos', 'calamares', 'cangrejos', 'langostas',
+            'camarones', 'estrellas-mar', 'erizos-mar', 'corales'
+        ];
+
+        const SUPPLIERS = [
+            'Farmaceutica Veterinaria S.A.', 'VetSupply Corp', 'NutriVet Solutions', 'FelineHealth Ltd',
+            'Laboratorios Veterinarios Mexicanos', 'Distribuidora Animal Health México', 'Suministros Veterinarios del Norte',
+            'Zoetis International', 'Merck Animal Health', 'Boehringer Ingelheim', 'Elanco Animal Health',
+            'Ceva Santé Animale', 'Virbac Corporation', 'Bayer Animal Health', 'Exotic Animal Pharmaceuticals',
+            'Marine Life Veterinary Supply', 'Avian Health Solutions', 'Reptile Medical Supply Co.',
+            'Wildlife Rehabilitation Meds', 'Zoo Animal Health Services'
+        ];
+
+        // Lógica específica para la página de inventario
+        class InventoryPage {
+            constructor() {
+                this.currentUser = null;
+                this.medicines = [];
+                this.filteredMedicines = [];
+                this.currentSort = { field: null, direction: 'asc' };
+                this.currentPage = 1;
+                this.itemsPerPage = 10;
+                this.modal = null;
+                this.init();
+            }
+
+            init() {
+                this.checkAuthentication();
+                this.loadAnimalTypesAndSuppliers();
+                this.loadData();
+                this.setupEventListeners();
+                this.updateStats();
+                this.renderTable();
+            }
+
+            // CARGAR TIPOS DE ANIMALES Y PROVEEDORES EN LOS SELECTS
+            loadAnimalTypesAndSuppliers() {
+                const filterTypeSelect = document.getElementById('filterType');
+                const medTypeSelect = document.getElementById('medType');
+                const supplierSelect = document.getElementById('medSupplier');
+
+                // Cargar tipos de animales en filtro
+                ANIMAL_TYPES.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = `${this.getTypeIcon(type)} ${this.formatAnimalName(type)}`;
+                    filterTypeSelect.appendChild(option);
+                });
+
+                // Cargar tipos de animales en modal
+                ANIMAL_TYPES.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = `${this.getTypeIcon(type)} ${this.formatAnimalName(type)}`;
+                    medTypeSelect.appendChild(option);
+                });
+
+                // Cargar proveedores
+                SUPPLIERS.forEach(supplier => {
+                    const option = document.createElement('option');
+                    option.value = supplier;
+                    option.textContent = supplier;
+                    supplierSelect.appendChild(option);
+                });
+            }
+
+            formatAnimalName(type) {
+                return type.split('-').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+            }
+
+            checkAuthentication() {
+                const savedUser = StorageManager.getUser();
+                if (!savedUser || !this.isSessionValid(savedUser)) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                this.currentUser = savedUser;
+                this.updateUserInfo();
+            }
+
+            isSessionValid(user) {
+                if (!user.loginTime) return false;
+                const loginTime = new Date(user.loginTime);
+                const now = new Date();
+                const timeDiff = now - loginTime;
+                return timeDiff < (8 * 60 * 60 * 1000);
+            }
+
+            updateUserInfo() {
+                const userName = document.getElementById('userName');
+                if (userName && this.currentUser) {
+                    const roleText = this.currentUser.role === 'admin' ? 'Administrador' : 'Empleado';
+                    userName.textContent = `${this.currentUser.username} (${roleText})`;
+                }
+            }
+
+            loadData() {
+                this.medicines = StorageManager.getMedicines();
+                if (this.medicines.length === 0) {
+                    this.createSampleData();
+                }
+                this.applyFilters();
+            }
+
+            // DATOS DE MUESTRA MEJORADOS CON TIPOS ALEATORIOS
+            createSampleData() {
+                const samples = [
+                    {
+                        id: 1, code: 'MED001', name: 'Amoxicilina Veterinaria', quantity: 50, minStock: 10,
+                        dose: '250mg', animalType: ANIMAL_TYPES[Math.floor(Math.random() * ANIMAL_TYPES.length)], 
+                        expiryDate: '2025-12-31', supplier: SUPPLIERS[Math.floor(Math.random() * SUPPLIERS.length)],
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 2, code: 'MED002', name: 'Antihistamínico Multi', quantity: 5, minStock: 15,
+                        dose: '10mg', animalType: ANIMAL_TYPES[Math.floor(Math.random() * ANIMAL_TYPES.length)], 
+                        expiryDate: '2025-08-15', supplier: SUPPLIERS[Math.floor(Math.random() * SUPPLIERS.length)],
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 3, code: 'MED003', name: 'Vitaminas Complejas', quantity: 2, minStock: 20,
+                        dose: '5ml', animalType: ANIMAL_TYPES[Math.floor(Math.random() * ANIMAL_TYPES.length)], 
+                        expiryDate: '2024-06-30', supplier: SUPPLIERS[Math.floor(Math.random() * SUPPLIERS.length)],
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 4, code: 'MED004', name: 'Antibiótico Avanzado', quantity: 25, minStock: 8,
+                        dose: '500mg', animalType: ANIMAL_TYPES[Math.floor(Math.random() * ANIMAL_TYPES.length)], 
+                        expiryDate: '2026-03-15', supplier: SUPPLIERS[Math.floor(Math.random() * SUPPLIERS.length)],
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 5, code: 'MED005', name: 'Analgésico Natural', quantity: 0, minStock: 12,
+                        dose: '100mg', animalType: ANIMAL_TYPES[Math.floor(Math.random() * ANIMAL_TYPES.length)], 
+                        expiryDate: '2025-09-20', supplier: SUPPLIERS[Math.floor(Math.random() * SUPPLIERS.length)],
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                this.medicines = samples;
+                StorageManager.saveMedicines(this.medicines);
+            }
+
+            setupEventListeners() {
+                // Logout
+                document.getElementById('logoutBtn')?.addEventListener('click', () => this.logout());
+
+                // Botones principales
+                document.getElementById('addMedBtn')?.addEventListener('click', () => this.showAddModal());
+                document.getElementById('exportBtn')?.addEventListener('click', () => this.exportData());
+                document.getElementById('clearFiltersBtn')?.addEventListener('click', () => this.clearFilters());
+
+                // Filtros
+                document.getElementById('searchInput')?.addEventListener('input', this.debounce(() => this.applyFilters(), 300));
+                document.getElementById('filterType')?.addEventListener('change', () => this.applyFilters());
+                document.getElementById('filterStatus')?.addEventListener('change', () => this.applyFilters());
+
+                // Ordenamiento
+                document.querySelectorAll('.sortable').forEach(th => {
+                    th.addEventListener('click', () => this.handleSort(th.dataset.sort));
+                });
+
+                // Modal
+                this.setupModalEvents();
+            }
+
+            setupModalEvents() {
+                const modal = document.getElementById('medicineModal');
+                const closeBtn = modal?.querySelector('.close');
+                const cancelBtn = document.getElementById('cancelBtn');
+                const form = document.getElementById('medicineForm');
+
+                closeBtn?.addEventListener('click', () => this.closeModal());
+                cancelBtn?.addEventListener('click', () => this.closeModal());
+                form?.addEventListener('submit', (e) => this.handleFormSubmit(e));
+
+                modal?.addEventListener('click', (e) => {
+                    if (e.target === modal) this.closeModal();
+                });
+            }
+
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            // Función showToast AGREGADA
+            showToast(message, type = 'info', duration = 3000) {
+                let toastContainer = document.getElementById('toastContainer');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toastContainer';
+                    toastContainer.style.cssText = `
+                        position: fixed; top: 20px; right: 20px; z-index: 10000;
+                        display: flex; flex-direction: column; gap: 10px;
+                    `;
+                    document.body.appendChild(toastContainer);
+                }
+
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    padding: 12px 16px; border-radius: 6px; color: white; font-weight: 500;
+                    min-width: 250px; opacity: 0; transform: translateX(100%);
+                    transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                `;
+
+                const colors = { 'success': '#10b981', 'error': '#ef4444', 'warning': '#f59e0b', 'info': '#3b82f6' };
+                toast.style.backgroundColor = colors[type] || colors['info'];
+                toast.textContent = message;
+
+                toastContainer.appendChild(toast);
+                setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(0)'; }, 100);
+                setTimeout(() => {
+                    toast.style.opacity = '0'; toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+                }, duration);
+            }
+
+            logout() {
+                try {
+                    if (!confirm('¿Estás seguro que quieres cerrar sesión?')) return;
+                    StorageManager.clearUser();
+                    localStorage.removeItem('veterinary_user');
+                    this.showToast('Cerrando sesión...', 'info');
+                    setTimeout(() => { window.location.href = 'login.html'; }, 1000);
+                } catch (error) {
+                    console.error('Error en logout:', error);
+                    localStorage.clear();
+                    window.location.href = 'login.html';
+                }
+            }
+
+            applyFilters() {
+                const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+                const typeFilter = document.getElementById('filterType')?.value || '';
+                const statusFilter = document.getElementById('filterStatus')?.value || '';
+
+                this.filteredMedicines = this.medicines.filter(med => {
+                    const matchesSearch = !searchTerm || 
+                        med.name.toLowerCase().includes(searchTerm) ||
+                        med.code.toLowerCase().includes(searchTerm);
+                    
+                    const matchesType = !typeFilter || med.animalType === typeFilter;
+                    const matchesStatus = !statusFilter || this.getMedicineStatus(med) === statusFilter;
+
+                    return matchesSearch && matchesType && matchesStatus;
+                });
+
+                this.currentPage = 1;
+                this.renderTable();
+                this.updateResultsCount();
+            }
+
+            getMedicineStatus(medicine) {
+                const now = new Date();
+                const expiryDate = new Date(medicine.expiryDate);
+                
+                if (expiryDate < now) return 'expired';
+                if (medicine.quantity <= medicine.minStock) return 'low';
+                return 'available';
+            }
+
+            handleSort(field) {
+                if (this.currentSort.field === field) {
+                    this.currentSort.direction = this.currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.currentSort.field = field;
+                    this.currentSort.direction = 'asc';
+                }
+                
+                this.renderTable();
+                this.updateSortIcons();
+            }
+
+            updateSortIcons() {
+                document.querySelectorAll('.sortable').forEach(th => {
+                    const icon = th.querySelector('.sort-icon');
+                    if (th.dataset.sort === this.currentSort.field) {
+                        icon.textContent = this.currentSort.direction === 'asc' ? '↑' : '↓';
+                    } else {
+                        icon.textContent = '↕️';
+                    }
+                });
+            }
+
+            renderTable() {
+                let data = [...this.filteredMedicines];
+                
+                // Aplicar ordenamiento
+                if (this.currentSort.field) {
+                    data.sort((a, b) => {
+                        let aVal = a[this.currentSort.field];
+                        let bVal = b[this.currentSort.field];
+                        
+                        if (this.currentSort.field.includes('Date')) {
+                            aVal = new Date(aVal);
+                            bVal = new Date(bVal);
+                        }
+                        
+                        const comparison = aVal > bVal ? 1 : -1;
+                        return this.currentSort.direction === 'desc' ? -comparison : comparison;
+                    });
+                }
+
+                // Paginación
+                const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+                const paginatedData = data.slice(startIndex, startIndex + this.itemsPerPage);
+
+                const tbody = document.getElementById('medicineTableBody');
+                if (!tbody) return;
+
+                if (paginatedData.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty-message">
+                                <div class="empty-state">
+                                    <div class="empty-icon">📦</div>
+                                    <p>No se encontraron medicamentos</p>
+                                    <button class="btn btn-primary" onclick="inventoryPage.showAddModal()">
+                                        Agregar Primer Medicamento
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = paginatedData.map(med => this.renderMedicineRow(med)).join('');
+                this.renderPagination(data.length);
+            }
+
+            renderMedicineRow(medicine) {
+                const status = this.getMedicineStatus(medicine);
+                const statusBadge = this.getStatusBadge(status);
+                const expiryWarning = this.getExpiryWarning(medicine.expiryDate);
+
+                return `
+                    <tr class="medicine-row ${status}" data-id="${medicine.id}">
+                        <td>
+                            <div class="code-cell">
+                                <strong>${medicine.code}</strong>
+                                ${medicine.quantity === 0 ? '<span class="stock-warning">Sin Stock</span>' : ''}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="medicine-info">
+                                <div class="medicine-name">${medicine.name}</div>
+                                <div class="medicine-dose">Dosis: ${medicine.dose}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="stock-info">
+                                <span class="stock-current ${medicine.quantity <= medicine.minStock ? 'low' : ''}">${medicine.quantity}</span>
+                                <span class="stock-min">/ ${medicine.minStock} mín</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="type-badge ${medicine.animalType}">
+                                ${this.getTypeIcon(medicine.animalType)} ${this.formatAnimalName(medicine.animalType)}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="expiry-info">
+                                <div class="expiry-date">${this.formatDate(medicine.expiryDate)}</div>
+                                ${expiryWarning}
+                            </div>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn view" onclick="inventoryPage.viewMedicine(${medicine.id})" title="Ver detalles">
+                                    👁️
+                                </button>
+                                <button class="action-btn edit" onclick="inventoryPage.editMedicine(${medicine.id})" title="Editar">
+                                    ✏️
+                                </button>
+                                <button class="action-btn delete" onclick="inventoryPage.deleteMedicine(${medicine.id})" title="Eliminar">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            getStatusBadge(status) {
+                const badges = {
+                    'available': '<span class="status-badge available">✅ Disponible</span>',
+                    'low': '<span class="status-badge low">⚠️ Stock Bajo</span>',
+                    'expired': '<span class="status-badge expired">❌ Vencido</span>'
+                };
+                return badges[status] || badges['available'];
+            }
+
+            // FUNCIÓN getTypeIcon MEJORADA CON TODOS LOS ICONOS
+            getTypeIcon(type) {
+                const icons = {
+                    'perros': '🐕', 'gatos': '🐱', 'general': '🏥', 'conejos': '🐰', 'hamsters': '🐹',
+                    'cobayas': '🐹', 'chinchillas': '🐭', 'hurones': '🦫', 'aves-domesticas': '🐦', 
+                    'canarios': '🐤', 'loros': '🦜', 'periquitos': '🦜', 'peces-ornamentales': '🐠',
+                    'tortugas': '🐢', 'iguanas': '🦎', 'serpientes': '🐍', 'erizos': '🦔', 'vacas': '🐄',
+                    'cerdos': '🐷', 'cabras': '🐐', 'ovejas': '🐑', 'pollos': '🐓', 'gallinas': '🐔',
+                    'patos': '🦆', 'gansos': '🦢', 'pavos': '🦃', 'caballos': '🐴', 'burros': '🫏',
+                    'mulas': '🐴', 'llamas': '🦙', 'alpacas': '🦙', 'primates': '🐵', 'felinos-grandes': '🦁',
+                    'osos': '🐻', 'lobos': '🐺', 'zorros': '🦊', 'mapaches': '🦝', 'nutrias': '🦦',
+                    'focas': '🦭', 'delfines': '🐬', 'ballenas': '🐋', 'tiburones': '🦈', 'rayas': '🐟',
+                    'cocodrilos': '🐊', 'lagartos': '🦎', 'salamandras': '🦎', 'ranas': '🐸', 'sapos': '🐸',
+                    'arañas': '🕷️', 'escorpiones': '🦂', 'insectos': '🐛', 'aguila': '🦅', 'halcon': '🦅',
+                    'buho': '🦉', 'flamingo': '🦩', 'pinguino': '🐧', 'avestruz': '🦓', 'emu': '🦓',
+                    'casuario': '🦓', 'tucanes': '🦜', 'guacamayos': '🦜', 'cacatuas': '🦜', 'cisnes': '🦢',
+                    'pelicanos': '🦢', 'peces-marinos': '🐟', 'peces-agua-dulce': '🐟', 'medusas': '🪼',
+                    'pulpos': '🐙', 'calamares': '🦑', 'cangrejos': '🦀', 'langostas': '🦞', 'camarones': '🦐',
+                    'estrellas-mar': '⭐', 'erizos-mar': '🦔', 'corales': '🪸', 'Tigre': '🐅'
+                };
+                return icons[type] || '🐾';
+            }
+
+            getExpiryWarning(dateString) {
+                const expiryDate = new Date(dateString);
+                const now = new Date();
+                const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+
+                if (daysUntilExpiry < 0) {
+                    return '<div class="expiry-warning expired">❌ Vencido</div>';
+                } else if (daysUntilExpiry <= 30) {
+                    return `<div class="expiry-warning warning">⚠️ ${daysUntilExpiry} días</div>`;
+                }
+                return '';
+            }
+
+            formatDate(dateString) {
+                return new Date(dateString).toLocaleDateString('es-ES');
+            }
+
+            renderPagination(totalItems) {
+                const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+                const container = document.getElementById('paginationContainer');
+                
+                if (!container || totalPages <= 1) {
+                    if (container) container.innerHTML = '';
+                    return;
+                }
+
+                let html = '<div class="pagination">';
+                
+                html += `<button class="page-btn ${this.currentPage === 1 ? 'disabled' : ''}" 
+                                onclick="inventoryPage.goToPage(${this.currentPage - 1})" 
+                                ${this.currentPage === 1 ? 'disabled' : ''}>← Anterior</button>`;
+
+                for (let i = Math.max(1, this.currentPage - 2); i <= Math.min(totalPages, this.currentPage + 2); i++) {
+                    html += `<button class="page-btn ${i === this.currentPage ? 'active' : ''}" 
+                                    onclick="inventoryPage.goToPage(${i})">${i}</button>`;
+                }
+
+                html += `<button class="page-btn ${this.currentPage === totalPages ? 'disabled' : ''}" 
+                                onclick="inventoryPage.goToPage(${this.currentPage + 1})" 
+                                ${this.currentPage === totalPages ? 'disabled' : ''}>Siguiente →</button>`;
+
+                html += '</div>';
+                
+                const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+                const end = Math.min(this.currentPage * this.itemsPerPage, totalItems);
+                html += `<div class="pagination-info">Mostrando ${start} - ${end} de ${totalItems} medicamentos</div>`;
+
+                container.innerHTML = html;
+            }
+
+            goToPage(page) {
+                const totalPages = Math.ceil(this.filteredMedicines.length / this.itemsPerPage);
+                if (page < 1 || page > totalPages) return;
+                
+                this.currentPage = page;
+                this.renderTable();
+            }
+
+            updateStats() {
+                const total = this.medicines.length;
+                const lowStock = this.medicines.filter(med => med.quantity <= med.minStock).length;
+                const expiring = this.medicines.filter(med => {
+                    const expiryDate = new Date(med.expiryDate);
+                    const thirtyDays = new Date();
+                    thirtyDays.setDate(thirtyDays.getDate() + 30);
+                    return expiryDate <= thirtyDays && expiryDate >= new Date();
+                }).length;
+                const totalValue = this.medicines.reduce((sum, med) => sum + (med.quantity * 10), 0);
+
+                document.getElementById('totalMedicines').textContent = total;
+                document.getElementById('lowStockCount').textContent = lowStock;
+                document.getElementById('expiringCount').textContent = expiring;
+                document.getElementById('totalValue').textContent = this.formatCurrency(totalValue);
+            }
+
+            updateResultsCount() {
+                const count = this.filteredMedicines.length;
+                const resultsCount = document.getElementById('resultsCount');
+                if (resultsCount) {
+                    resultsCount.textContent = `${count} medicamento${count !== 1 ? 's' : ''}`;
+                }
+            }
+
+            formatCurrency(amount) {
+                return new Intl.NumberFormat('es-CR', {
+                    style: 'currency',
+                    currency: 'CRC',
+                    minimumFractionDigits: 0
+                }).format(amount);
+            }
+
+            showAddModal() {
+                if (!this.canCreate()) {
+                    this.showToast('No tienes permisos para agregar medicamentos', 'error');
+                    return;
+                }
+
+                const modal = document.getElementById('medicineModal');
+                const title = document.getElementById('modalTitle');
+                const form = document.getElementById('medicineForm');
+                
+                title.textContent = 'Agregar Medicamento';
+                form.reset();
+                delete form.dataset.editId;
+                modal.classList.add('active');
+            }
+
+            editMedicine(id) {
+                if (!this.canEdit()) {
+                    this.showToast('No tienes permisos para editar medicamentos', 'error');
+                    return;
+                }
+
+                const medicine = this.medicines.find(med => med.id === id);
+                if (!medicine) return;
+
+                const modal = document.getElementById('medicineModal');
+                const title = document.getElementById('modalTitle');
+                const form = document.getElementById('medicineForm');
+                
+                title.textContent = 'Editar Medicamento';
+                
+                Object.keys(medicine).forEach(key => {
+                    const field = form.querySelector(`[name="${key}"]`);
+                    if (field) field.value = medicine[key];
+                });
+
+                form.dataset.editId = id;
+                modal.classList.add('active');
+            }
+
+            viewMedicine(id) {
+                const medicine = this.medicines.find(med => med.id === id);
+                if (!medicine) return;
+
+                const details = [
+                    `Medicamento: ${medicine.name} (${medicine.code})`,
+                    `Dosis: ${medicine.dose}`,
+                    `Tipo: ${this.getTypeIcon(medicine.animalType)} ${this.formatAnimalName(medicine.animalType)}`,
+                    `Stock: ${medicine.quantity} / ${medicine.minStock} mín`,
+                    `Proveedor: ${medicine.supplier}`,
+                    `Vencimiento: ${this.formatDate(medicine.expiryDate)}`,
+                    `Estado: ${this.getMedicineStatus(medicine)}`
+                ].join('\n');
+
+                alert(details);
+            }
+
+            async deleteMedicine(id) {
+                if (!this.canDelete()) {
+                    this.showToast('No tienes permisos para eliminar medicamentos', 'error');
+                    return;
+                }
+
+                const medicine = this.medicines.find(med => med.id === id);
+                if (!medicine) return;
+
+                if (confirm(`¿Eliminar "${medicine.name}"?\n\nEsta acción no se puede deshacer.`)) {
+                    this.medicines = this.medicines.filter(med => med.id !== id);
+                    StorageManager.saveMedicines(this.medicines);
+                    this.loadData();
+                    this.updateStats();
+                    this.showToast('Medicamento eliminado correctamente', 'success');
+                }
+            }
+
+            handleFormSubmit(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const medicineData = Object.fromEntries(formData);
+                const editId = e.target.dataset.editId;
+
+                if (!this.validateMedicineData(medicineData)) {
+                    return;
+                }
+
+                if (editId) {
+                    const index = this.medicines.findIndex(med => med.id === parseInt(editId));
+                    if (index !== -1) {
+                        this.medicines[index] = {
+                            ...this.medicines[index],
+                            ...medicineData,
+                            quantity: parseInt(medicineData.quantity),
+                            minStock: parseInt(medicineData.minStock),
+                            updatedAt: new Date().toISOString()
+                        };
+                        this.showToast('Medicamento actualizado correctamente', 'success');
+                    }
+                } else {
+                    const newMedicine = {
+                        id: Date.now(),
+                        ...medicineData,
+                        quantity: parseInt(medicineData.quantity),
+                        minStock: parseInt(medicineData.minStock),
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+                    this.medicines.push(newMedicine);
+                    this.showToast('Medicamento agregado correctamente', 'success');
+                }
+
+                StorageManager.saveMedicines(this.medicines);
+                this.closeModal();
+                this.loadData();
+                this.updateStats();
+            }
+
+            validateMedicineData(data) {
+                if (!data.code || !data.name || !data.quantity || !data.minStock || 
+                    !data.dose || !data.animalType || !data.expiryDate || !data.supplier) {
+                    this.showToast('Por favor, completa todos los campos requeridos', 'error');
+                    return false;
+                }
+
+                if (parseInt(data.quantity) < 0 || parseInt(data.minStock) < 0) {
+                    this.showToast('Las cantidades no pueden ser negativas', 'error');
+                    return false;
+                }
+
+                return true;
+            }
+
+            closeModal() {
+                const modal = document.getElementById('medicineModal');
+                modal.classList.remove('active');
+            }
+
+            clearFilters() {
+                document.getElementById('searchInput').value = '';
+                document.getElementById('filterType').value = '';
+                document.getElementById('filterStatus').value = '';
+                this.applyFilters();
+            }
+
+            exportData() {
+                const data = this.filteredMedicines.map(med => ({
+                    'Código': med.code,
+                    'Nombre': med.name,
+                    'Cantidad': med.quantity,
+                    'Stock Mínimo': med.minStock,
+                    'Dosis': med.dose,
+                    'Tipo Animal': med.animalType,
+                    'Fecha Vencimiento': this.formatDate(med.expiryDate),
+                    'Proveedor': med.supplier,
+                    'Estado': this.getMedicineStatus(med)
+                }));
+
+                this.downloadCSV(data, `inventario_${new Date().toISOString().split('T')[0]}.csv`);
+                this.showToast('Inventario exportado correctamente', 'success');
+            }
+
+            downloadCSV(data, filename) {
+                const csv = this.convertToCSV(data);
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+
+            convertToCSV(data) {
+                const headers = Object.keys(data[0]);
+                const csvContent = [
+                    headers.join(','),
+                    ...data.map(row => headers.map(header => row[header]).join(','))
+                ].join('\n');
+                return csvContent;
+            }
+
+            canCreate() {
+                return this.currentUser?.role === 'admin';
+            }
+
+            canEdit() {
+                return this.currentUser?.role === 'admin';
+            }
+
+            canDelete() {
+                return this.currentUser?.role === 'admin';
+            }
+        }
+
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', () => {
+            window.inventoryPage = new InventoryPage();
+        });
+    </script>
+
+    <style>
+        /* Estilos específicos de la página de inventario */
+        .main-content {
+            padding: 2rem;
+            background: var(--light-color);
+            min-height: calc(100vh - 64px);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            gap: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .page-icon {
+            font-size: 2.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-light);
+            margin: 0.5rem 0 0 0;
+            font-size: 1rem;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .inventory-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .stat-card.danger {
+            border-left-color: var(--danger-color);
+        }
+
+        .stat-card.success {
+            border-left-color: var(--success-color);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+
+        .stat-number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        .filters-section {
+            margin-bottom: 2rem;
+        }
+
+        .filters-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .filters-title {
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .filter-input,
+        .filter-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .inventory-table-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--dark-color);
+        }
+
+        .results-count {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .inventory-table th {
+            background: var(--light-color);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sortable:hover {
+            background: #e2e8f0;
+        }
+
+        .th-content {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .inventory-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        .medicine-row:hover {
+            background: var(--light-color);
+        }
+
+        .medicine-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .medicine-name {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .medicine-dose {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        .stock-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .stock-current {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .stock-current.low {
+            color: var(--danger-color);
+        }
+
+        .stock-min {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        .type-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .expiry-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .expiry-warning {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .expiry-warning.warning {
+            color: var(--warning-color);
+        }
+
+        .expiry-warning.expired {
+            color: var(--danger-color);
+        }
+
+        .status-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-badge.available {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-badge.low {
+            background: rgba(251, 191, 36, 0.1);
+            color: var(--warning-color);
+        }
+
+        .status-badge.expired {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--light-color);
+            border-color: var(--primary-color);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .page-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .page-btn:hover:not(.disabled) {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .page-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            text-align: center;
+            padding: 0 1.5rem 1.5rem;
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .inventory-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

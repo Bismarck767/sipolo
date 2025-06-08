@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - VeterinaryProject</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>🏥 VeterinaryProject</h1>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+                    <li><a href="inventory.html" class="nav-link">Inventario</a></li>
+                    <li><a href="alerts.html" class="nav-link">Alertas</a></li>
+                    <li><a href="reports.html" class="nav-link active">Reportes</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <span id="userName">Usuario</span>
+                <button id="logoutBtn" class="btn btn-secondary">Cerrar Sesión</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title-section">
+                    <h1 class="page-title">
+                        <span class="page-icon">📊</span>
+                        Centro de Reportes
+                    </h1>
+                    <p class="page-subtitle">Genera reportes e informes del inventario</p>
+                </div>
+            </div>
+
+            <!-- Report Controls -->
+            <div class="report-controls">
+                <div class="controls-card">
+                    <h3>🔧 Configuración del Reporte</h3>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label for="reportType">Tipo de Reporte:</label>
+                            <select id="reportType" class="control-select">
+                                <option value="inventory">📦 Estado del Inventario</option>
+                                <option value="expiry">⏰ Medicamentos por Vencer</option>
+                                <option value="lowstock">📉 Stock Bajo</option>
+                                <option value="consumption">📈 Reporte de Consumo</option>
+                                <option value="financial">💰 Reporte Financiero</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="dateFrom">Desde:</label>
+                            <input type="date" id="dateFrom" class="control-input">
+                        </div>
+                        <div class="control-group">
+                            <label for="dateTo">Hasta:</label>
+                            <input type="date" id="dateTo" class="control-input">
+                        </div>
+                        <div class="control-group">
+                            <button id="generateBtn" class="btn btn-primary">📊 Generar Reporte</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Reports -->
+            <div class="quick-reports">
+                <h3>⚡ Reportes Rápidos</h3>
+                <div class="quick-grid">
+                    <button class="quick-report-btn" onclick="reportsPage.quickReport('inventory')">
+                        <div class="quick-icon">📦</div>
+                        <div class="quick-content">
+                            <h4>Inventario Completo</h4>
+                            <p>Estado actual del inventario</p>
+                        </div>
+                    </button>
+                    <button class="quick-report-btn" onclick="reportsPage.quickReport('expiry')">
+                        <div class="quick-icon">⏰</div>
+                        <div class="quick-content">
+                            <h4>Por Vencer</h4>
+                            <p>Medicamentos próximos a vencer</p>
+                        </div>
+                    </button>
+                    <button class="quick-report-btn" onclick="reportsPage.quickReport('lowstock')">
+                        <div class="quick-icon">📉</div>
+                        <div class="quick-content">
+                            <h4>Stock Bajo</h4>
+                            <p>Medicamentos con stock crítico</p>
+                        </div>
+                    </button>
+                    <button class="quick-report-btn" onclick="reportsPage.quickReport('financial')">
+                        <div class="quick-icon">💰</div>
+                        <div class="quick-content">
+                            <h4>Financiero</h4>
+                            <p>Valor total del inventario</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Report Content -->
+            <div class="report-section">
+                <div class="report-header">
+                    <h3 id="reportTitle">📊 Reporte</h3>
+                    <div class="report-actions">
+                        <button id="exportBtn" class="btn btn-secondary" style="display: none;">📄 Exportar CSV</button>
+                        <button id="printBtn" class="btn btn-secondary" style="display: none;">🖨️ Imprimir</button>
+                    </div>
+                </div>
+                <div id="reportContent" class="report-content">
+                    <div class="welcome-report">
+                        <div class="welcome-icon">📊</div>
+                        <h4>Bienvenido al Centro de Reportes</h4>
+                        <p>Selecciona un tipo de reporte para comenzar o usa los reportes rápidos.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="../utils/helpers.js"></script>
+    <script src="../assets/js/storage.js"></script>
+    <script src="../assets/js/auth.js"></script>
+
+    <script>
+        class ReportsPage {
+            constructor() {
+                this.currentUser = null;
+                this.medicines = [];
+                this.currentReportData = null;
+                this.init();
+            }
+
+            init() {
+                this.checkAuthentication();
+                this.loadData();
+                this.setupEvents();
+                this.setDefaultDates();
+            }
+
+            checkAuthentication() {
+                const savedUser = StorageManager.getUser();
+                if (!savedUser || !this.isSessionValid(savedUser)) {
+                    this.showToast('Sesión expirada. Redirigiendo al login...', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                    return;
+                }
+                this.currentUser = savedUser;
+                this.updateUserInfo();
+            }
+
+            isSessionValid(user) {
+                if (!user.loginTime) return false;
+                const loginTime = new Date(user.loginTime);
+                const now = new Date();
+                const timeDiff = now - loginTime;
+                return timeDiff < (8 * 60 * 60 * 1000); // 8 horas
+            }
+
+            updateUserInfo() {
+                const userName = document.getElementById('userName');
+                if (userName && this.currentUser) {
+                    const roleText = this.currentUser.role === 'admin' ? 'Administrador' : 'Empleado';
+                    userName.textContent = `${this.currentUser.username} (${roleText})`;
+                }
+            }
+
+            async loadData() {
+                try {
+                    this.medicines = await StorageManager.getMedicines();
+                    if (this.medicines.length === 0) {
+                        this.showToast('No hay medicamentos registrados', 'info');
+                    }
+                } catch (error) {
+                    console.error('Error cargando medicamentos:', error);
+                    this.showToast('Error cargando datos', 'error');
+                    this.medicines = [];
+                }
+            }
+
+            setupEvents() {
+                // ✅ LOGOUT UNIFICADO
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', () => this.logout());
+                }
+
+                // Otros event listeners
+                document.getElementById('generateBtn')?.addEventListener('click', () => this.generateReport());
+                document.getElementById('exportBtn')?.addEventListener('click', () => this.exportReport());
+                document.getElementById('printBtn')?.addEventListener('click', () => window.print());
+                
+                // Cambio de tipo de reporte
+                document.getElementById('reportType')?.addEventListener('change', () => this.onReportTypeChange());
+            }
+
+            // 🔄 LOGOUT UNIFICADO
+            logout() {
+                try {
+                    // Confirmar logout
+                    if (!confirm('¿Estás seguro que quieres cerrar sesión?')) {
+                        return;
+                    }
+
+                    // Limpiar datos
+                    StorageManager.clearUser();
+                    localStorage.removeItem('veterinary_user');
+                    
+                    // Mostrar mensaje
+                    this.showToast('Cerrando sesión...', 'info');
+                    
+                    // Redirigir después de un momento
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('Error en logout:', error);
+                    // Forzar limpieza en caso de error
+                    localStorage.clear();
+                    window.location.href = 'login.html';
+                }
+            }
+
+            onReportTypeChange() {
+                const reportType = document.getElementById('reportType')?.value;
+                const dateControls = document.querySelectorAll('#dateFrom, #dateTo');
+                const needsDates = ['consumption', 'financial'].includes(reportType);
+                
+                dateControls.forEach(control => {
+                    if (control) {
+                        control.parentElement.style.display = needsDates ? 'block' : 'none';
+                    }
+                });
+            }
+
+            setDefaultDates() {
+                const today = new Date();
+                const lastMonth = new Date();
+                lastMonth.setMonth(today.getMonth() - 1);
+
+                const dateFromEl = document.getElementById('dateFrom');
+                const dateToEl = document.getElementById('dateTo');
+
+                if (dateFromEl) dateFromEl.value = lastMonth.toISOString().split('T')[0];
+                if (dateToEl) dateToEl.value = today.toISOString().split('T')[0];
+            }
+
+            generateReport() {
+                const reportType = document.getElementById('reportType')?.value;
+                const dateFrom = document.getElementById('dateFrom')?.value;
+                const dateTo = document.getElementById('dateTo')?.value;
+
+                if (!reportType) {
+                    this.showToast('Selecciona un tipo de reporte', 'warning');
+                    return;
+                }
+
+                this.showLoading();
+                
+                setTimeout(() => {
+                    try {
+                        const reportData = this.generateReportData(reportType, dateFrom, dateTo);
+                        this.renderReport(reportType, reportData);
+                        this.showActions();
+                        this.showToast('Reporte generado correctamente', 'success');
+                    } catch (error) {
+                        console.error('Error generando reporte:', error);
+                        this.showToast('Error generando el reporte', 'error');
+                        this.hideLoading();
+                    }
+                }, 1000);
+            }
+
+            quickReport(type) {
+                const reportTypeEl = document.getElementById('reportType');
+                if (reportTypeEl) {
+                    reportTypeEl.value = type;
+                    this.onReportTypeChange();
+                    this.generateReport();
+                }
+            }
+
+            generateReportData(type, dateFrom, dateTo) {
+                const data = {
+                    type,
+                    dateFrom,
+                    dateTo,
+                    generatedAt: new Date().toISOString(),
+                    totalMedicines: this.medicines.length
+                };
+
+                switch (type) {
+                    case 'inventory':
+                        return this.generateInventoryReport(data);
+                    case 'expiry':
+                        return this.generateExpiryReport(data);
+                    case 'lowstock':
+                        return this.generateLowStockReport(data);
+                    case 'financial':
+                        return this.generateFinancialReport(data);
+                    case 'consumption':
+                        return this.generateConsumptionReport(data);
+                    default:
+                        return data;
+                }
+            }
+
+            generateInventoryReport(data) {
+                const categories = this.groupByAnimalType();
+                const totalValue = this.medicines.reduce((sum, med) => sum + (med.quantity * 10), 0);
+                
+                return {
+                    ...data,
+                    categories,
+                    totalValue,
+                    medicines: this.medicines.map(med => ({
+                        ...med,
+                        status: this.getMedicineStatus(med),
+                        value: med.quantity * 10
+                    }))
+                };
+            }
+
+            generateExpiryReport(data) {
+                const now = new Date();
+                const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+                
+                const expired = this.medicines.filter(med => new Date(med.expiryDate) < now);
+                const expiring = this.medicines.filter(med => {
+                    const expiry = new Date(med.expiryDate);
+                    return expiry >= now && expiry <= thirtyDays;
+                });
+
+                return {
+                    ...data,
+                    expired: expired.map(med => ({
+                        ...med,
+                        daysOverdue: Math.ceil((now - new Date(med.expiryDate)) / (1000 * 60 * 60 * 24))
+                    })),
+                    expiring: expiring.map(med => ({
+                        ...med,
+                        daysRemaining: Math.ceil((new Date(med.expiryDate) - now) / (1000 * 60 * 60 * 24))
+                    }))
+                };
+            }
+
+            generateLowStockReport(data) {
+                const lowStock = this.medicines.filter(med => med.quantity <= med.minStock);
+                const outOfStock = this.medicines.filter(med => med.quantity === 0);
+
+                return {
+                    ...data,
+                    lowStock: lowStock.map(med => ({
+                        ...med,
+                        needed: Math.max(0, med.minStock - med.quantity)
+                    })),
+                    outOfStock
+                };
+            }
+
+            generateFinancialReport(data) {
+                const totalValue = this.medicines.reduce((sum, med) => sum + (med.quantity * 10), 0);
+                const categories = this.groupByAnimalType();
+
+                return {
+                    ...data,
+                    totalValue,
+                    categories: categories.map(cat => ({
+                        ...cat,
+                        value: cat.medicines.reduce((sum, med) => sum + (med.quantity * 10), 0)
+                    })),
+                    averageValue: totalValue / this.medicines.length || 0
+                };
+            }
+
+            generateConsumptionReport(data) {
+                return {
+                    ...data,
+                    message: 'Reporte de consumo requiere implementar sistema de movimientos',
+                    placeholder: true
+                };
+            }
+
+            renderReport(type, data) {
+                this.currentReportData = data;
+                const content = document.getElementById('reportContent');
+                const title = document.getElementById('reportTitle');
+
+                const titles = {
+                    inventory: '📦 Estado del Inventario',
+                    expiry: '⏰ Medicamentos por Vencer',
+                    lowstock: '📉 Stock Bajo',
+                    financial: '💰 Reporte Financiero',
+                    consumption: '📈 Reporte de Consumo'
+                };
+
+                if (title) title.textContent = titles[type] || '📊 Reporte';
+
+                if (!content) return;
+
+                switch (type) {
+                    case 'inventory':
+                        content.innerHTML = this.renderInventoryReport(data);
+                        break;
+                    case 'expiry':
+                        content.innerHTML = this.renderExpiryReport(data);
+                        break;
+                    case 'lowstock':
+                        content.innerHTML = this.renderLowStockReport(data);
+                        break;
+                    case 'financial':
+                        content.innerHTML = this.renderFinancialReport(data);
+                        break;
+                    default:
+                        content.innerHTML = this.renderPlaceholderReport(data);
+                }
+            }
+
+            renderInventoryReport(data) {
+                return `
+                    <div class="report-summary">
+                        <div class="summary-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">${data.totalMedicines}</span>
+                                <span class="stat-label">Total Medicamentos</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">${this.formatCurrency(data.totalValue)}</span>
+                                <span class="stat-label">Valor Total</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="report-table">
+                        <h4>📊 Por Categoría</h4>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Cantidad</th>
+                                    <th>Stock Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.categories.map(cat => `
+                                    <tr>
+                                        <td>${this.getTypeIcon(cat.type)} ${this.capitalize(cat.type)}</td>
+                                        <td>${cat.count}</td>
+                                        <td>${cat.totalStock}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            renderExpiryReport(data) {
+                return `
+                    <div class="report-summary">
+                        <div class="summary-stats">
+                            <div class="stat-item danger">
+                                <span class="stat-number">${data.expired.length}</span>
+                                <span class="stat-label">Vencidos</span>
+                            </div>
+                            <div class="stat-item warning">
+                                <span class="stat-number">${data.expiring.length}</span>
+                                <span class="stat-label">Por Vencer</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${data.expired.length > 0 ? `
+                        <div class="report-table">
+                            <h4>❌ Medicamentos Vencidos</h4>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Medicamento</th>
+                                        <th>Código</th>
+                                        <th>Cantidad</th>
+                                        <th>Días Vencido</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.expired.map(med => `
+                                        <tr class="table-danger">
+                                            <td>${med.name}</td>
+                                            <td>${med.code}</td>
+                                            <td>${med.quantity}</td>
+                                            <td>${med.daysOverdue} días</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : ''}
+
+                    ${data.expiring.length > 0 ? `
+                        <div class="report-table">
+                            <h4>⚠️ Por Vencer (30 días)</h4>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Medicamento</th>
+                                        <th>Código</th>
+                                        <th>Cantidad</th>
+                                        <th>Días Restantes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.expiring.map(med => `
+                                        <tr class="table-warning">
+                                            <td>${med.name}</td>
+                                            <td>${med.code}</td>
+                                            <td>${med.quantity}</td>
+                                            <td>${med.daysRemaining} días</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : ''}
+                `;
+            }
+
+            renderLowStockReport(data) {
+                return `
+                    <div class="report-summary">
+                        <div class="summary-stats">
+                            <div class="stat-item warning">
+                                <span class="stat-number">${data.lowStock.length}</span>
+                                <span class="stat-label">Stock Bajo</span>
+                            </div>
+                            <div class="stat-item danger">
+                                <span class="stat-number">${data.outOfStock.length}</span>
+                                <span class="stat-label">Sin Stock</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${data.lowStock.length > 0 ? `
+                        <div class="report-table">
+                            <h4>📦 Medicamentos con Stock Bajo</h4>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Medicamento</th>
+                                        <th>Stock Actual</th>
+                                        <th>Stock Mínimo</th>
+                                        <th>Necesario</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.lowStock.map(med => `
+                                        <tr class="${med.quantity === 0 ? 'table-danger' : 'table-warning'}">
+                                            <td>${med.name}</td>
+                                            <td>${med.quantity}</td>
+                                            <td>${med.minStock}</td>
+                                            <td>${med.needed}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : '<div class="empty-state">✅ Todos los medicamentos tienen stock adecuado</div>'}
+                `;
+            }
+
+            renderFinancialReport(data) {
+                return `
+                    <div class="report-summary">
+                        <div class="summary-stats">
+                            <div class="stat-item success">
+                                <span class="stat-number">${this.formatCurrency(data.totalValue)}</span>
+                                <span class="stat-label">Valor Total</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">${this.formatCurrency(data.averageValue)}</span>
+                                <span class="stat-label">Valor Promedio</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-table">
+                        <h4>💰 Valor por Categoría</h4>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Medicamentos</th>
+                                    <th>Valor Total</th>
+                                    <th>%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.categories.map(cat => `
+                                    <tr>
+                                        <td>${this.getTypeIcon(cat.type)} ${this.capitalize(cat.type)}</td>
+                                        <td>${cat.count}</td>
+                                        <td>${this.formatCurrency(cat.value)}</td>
+                                        <td>${((cat.value / data.totalValue) * 100).toFixed(1)}%</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            renderPlaceholderReport(data) {
+                return `
+                    <div class="placeholder-report">
+                        <div class="placeholder-icon">📊</div>
+                        <h4>Reporte en Desarrollo</h4>
+                        <p>${data.message || 'Este tipo de reporte estará disponible próximamente.'}</p>
+                    </div>
+                `;
+            }
+
+            // Métodos auxiliares
+            groupByAnimalType() {
+                const groups = { perros: [], gatos: [], general: [] };
+                this.medicines.forEach(med => {
+                    if (groups[med.animalType]) {
+                        groups[med.animalType].push(med);
+                    }
+                });
+
+                return Object.keys(groups).map(type => ({
+                    type,
+                    count: groups[type].length,
+                    totalStock: groups[type].reduce((sum, med) => sum + med.quantity, 0),
+                    medicines: groups[type]
+                }));
+            }
+
+            getMedicineStatus(med) {
+                const now = new Date();
+                const expiry = new Date(med.expiryDate);
+                if (expiry < now) return 'expired';
+                if (med.quantity <= med.minStock) return 'low';
+                return 'available';
+            }
+
+            getTypeIcon(type) {
+                return { perros: '🐕', gatos: '🐱', general: '🏥' }[type] || '🏥';
+            }
+
+            capitalize(str) {
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+
+            formatCurrency(amount) {
+                return new Intl.NumberFormat('es-CR', {
+                    style: 'currency',
+                    currency: 'CRC',
+                    minimumFractionDigits: 0
+                }).format(amount);
+            }
+
+            showLoading() {
+                const content = document.getElementById('reportContent');
+                if (content) {
+                    content.innerHTML = `
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Generando reporte...</p>
+                        </div>
+                    `;
+                }
+            }
+
+            hideLoading() {
+                const content = document.getElementById('reportContent');
+                if (content) {
+                    content.innerHTML = `
+                        <div class="welcome-report">
+                            <div class="welcome-icon">📊</div>
+                            <h4>Error generando el reporte</h4>
+                            <p>Intenta nuevamente o contacta al administrador.</p>
+                        </div>
+                    `;
+                }
+            }
+
+            showActions() {
+                const exportBtn = document.getElementById('exportBtn');
+                const printBtn = document.getElementById('printBtn');
+                
+                if (exportBtn) exportBtn.style.display = 'inline-block';
+                if (printBtn) printBtn.style.display = 'inline-block';
+            }
+
+            exportReport() {
+                if (!this.currentReportData) {
+                    this.showToast('No hay datos para exportar', 'warning');
+                    return;
+                }
+                
+                try {
+                    const data = this.currentReportData;
+                    const filename = `reporte_${data.type}_${new Date().toISOString().split('T')[0]}.csv`;
+                    
+                    let csvData = [];
+                    
+                    if (data.medicines) {
+                        csvData = data.medicines.map(med => ({
+                            'Código': med.code,
+                            'Nombre': med.name,
+                            'Cantidad': med.quantity,
+                            'Estado': med.status || this.getMedicineStatus(med)
+                        }));
+                    }
+                    
+                    this.downloadCSV(csvData, filename);
+                    this.showToast('Reporte exportado correctamente', 'success');
+                } catch (error) {
+                    console.error('Error exportando:', error);
+                    this.showToast('Error exportando el reporte', 'error');
+                }
+            }
+
+            downloadCSV(data, filename) {
+                if (data.length === 0) {
+                    this.showToast('No hay datos para exportar', 'warning');
+                    return;
+                }
+                
+                try {
+                    const headers = Object.keys(data[0]);
+                    const csv = [
+                        headers.join(','),
+                        ...data.map(row => headers.map(h => row[h]).join(','))
+                    ].join('\n');
+                    
+                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename;
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                } catch (error) {
+                    console.error('Error creando CSV:', error);
+                    this.showToast('Error creando el archivo CSV', 'error');
+                }
+            }
+
+            // Sistema de toast simple
+            showToast(message, type = 'info') {
+                const container = document.getElementById('toastContainer') || this.createToastContainer();
+                
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                toast.innerHTML = `
+                    <span class="toast-message">${message}</span>
+                    <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+                `;
+                
+                container.appendChild(toast);
+                
+                // Auto-remove después de 5 segundos
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 5000);
+            }
+
+            createToastContainer() {
+                const container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+                return container;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.reportsPage = new ReportsPage();
+        });
+    </script>
+
+    <style>
+        .main-content { padding: 2rem; background: var(--light-color); }
+        .page-header { margin-bottom: 2rem; }
+        .page-title { font-size: 2rem; display: flex; align-items: center; gap: 0.75rem; margin: 0; }
+        .page-subtitle { color: var(--text-light); margin: 0.5rem 0 0 0; }
+        
+        .report-controls { margin-bottom: 2rem; }
+        .controls-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow); }
+        .controls-grid { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: end; }
+        .control-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .control-select, .control-input { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; }
+        
+        .quick-reports { margin-bottom: 2rem; }
+        .quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .quick-report-btn { background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: all 0.2s; box-shadow: var(--shadow); }
+        .quick-report-btn:hover { border-color: var(--primary-color); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .quick-icon { font-size: 2rem; }
+        .quick-content h4 { margin: 0 0 0.25rem 0; }
+        .quick-content p { margin: 0; color: var(--text-light); font-size: 0.875rem; }
+        
+        .report-section { background: white; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+        .report-header { padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .report-actions { display: flex; gap: 1rem; }
+        .report-content { padding: 1.5rem; min-height: 400px; }
+        
+        .welcome-report { text-align: center; padding: 3rem; color: var(--text-light); }
+        .welcome-icon { font-size: 4rem; margin-bottom: 1rem; }
+        .loading-state { text-align: center; padding: 3rem; }
+        .placeholder-report { text-align: center; padding: 3rem; color: var(--text-light); }
+        .placeholder-icon { font-size: 4rem; margin-bottom: 1rem; }
+        
+        .report-summary { margin-bottom: 2rem; }
+        .summary-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .stat-item { text-align: center; padding: 1rem; background: var(--light-color); border-radius: 8px; }
+        .stat-item.success { border-left: 4px solid var(--success-color); }
+        .stat-item.warning { border-left: 4px solid var(--warning-color); }
+        .stat-item.danger { border-left: 4px solid var(--danger-color); }
+        .stat-number { font-size: 1.5rem; font-weight: 700; display: block; }
+        .stat-label { font-size: 0.875rem; color: var(--text-light); }
+        
+        .report-table { margin-bottom: 2rem; }
+        .report-table h4 { margin-bottom: 1rem; }
+        .table-danger { background: rgba(239, 68, 68, 0.1); }
+        .table-warning { background: rgba(251, 191, 36, 0.1); }
+        
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--border-color); border-top: 4px solid var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Toast Styles */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; max-width: 400px; }
+        .toast { background: white; border-radius: 8px; box-shadow: var(--shadow-lg); padding: 1rem; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; animation: slideInRight 0.3s ease; }
+        .toast-info { border-left: 4px solid var(--primary-color); }
+        .toast-success { border-left: 4px solid var(--success-color); }
+        .toast-warning { border-left: 4px solid var(--warning-color); }
+        .toast-error { border-left: 4px solid var(--danger-color); }
+        .toast-message { flex: 1; font-size: 0.875rem; }
+        .toast-close { background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-light); margin-left: 1rem; }
+        .toast-close:hover { color: var(--text-color); }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        @media (max-width: 768px) {
+            .main-content { padding: 1rem; }
+            .controls-grid { grid-template-columns: 1fr; }
+            .quick-grid { grid-template-columns: 1fr; }
+            .toast-container { left: 1rem; right: 1rem; max-width: none; }
+        }
+    </style>
+</body>
+</html>
